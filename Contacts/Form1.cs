@@ -22,6 +22,7 @@ namespace Contacts
 
         private void buttonAdd_Click(object sender, EventArgs e)
         {
+            /*
             string name = textBoxName.Text;
             string address = textBoxAddress.Text;
             string phone = textBoxPhone.Text;
@@ -31,6 +32,13 @@ namespace Contacts
             textBoxAddress.Text = "";
             textBoxPhone.Text = "";
             listContacts();
+            */
+            FormAddContact formAddContact = new FormAddContact();
+
+            if (formAddContact.ShowDialog() == DialogResult.OK) { 
+
+            }
+
         }
 
         private void listContacts()
@@ -40,6 +48,7 @@ namespace Contacts
             {
                 listBoxContacs.Items.Add(contact.DisplayContact());
             }
+
         }
 
         private void buttonRemove_Click(object sender, EventArgs e)
