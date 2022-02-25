@@ -1,11 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Drawing;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using System.IO;
 using System.Windows.Forms;
 
 namespace Contacts
@@ -13,30 +8,55 @@ namespace Contacts
     public partial class Form1 : Form
     {
         private List<Contact> contacts = new List<Contact>();
-
+        private static string FILE_NAME = "contacts.txt";
+        private static string [] SEPARATOR = new string[] { "<separator>" };
+        
         public Form1()
         {
             InitializeComponent();
+            if (File.Exists(FILE_NAME))
+            {
+                string[] lines = File.ReadAllLines(FILE_NAME);
+                foreach (var line in lines)
+                {
+                    string[] fields = line.Split(SEPARATOR, StringSplitOptions.None);
+                    string name = "";
+                    string address = "";
+                    string phone = "";
+                    if (fields.Length > 0)
+                    {
+                        name = fields[0];
+                    }
+                    if (fields.Length > 1)
+                    {
+                        address = fields[1];
+                    }
+                    if (fields.Length > 2)
+                    {
+                        phone = fields[2];
+                    }
+                    contacts.Add(new Contact(name, address, phone));
+
+                }
+            }
+
+
+            listContacts();
         }
 
 
         private void buttonAdd_Click(object sender, EventArgs e)
         {
-            /*
-            string name = textBoxName.Text;
-            string address = textBoxAddress.Text;
-            string phone = textBoxPhone.Text;
-            Contact contact = new Contact(name, address, phone);
-            contacts.Add(contact);
-            textBoxName.Text = "";
-            textBoxAddress.Text = "";
-            textBoxPhone.Text = "";
-            listContacts();
-            */
+
             FormAddContact formAddContact = new FormAddContact();
+            if (formAddContact.ShowDialog() == DialogResult.OK) {
+                string name = formAddContact.ContactName;
+                string address = formAddContact.Address;
+                string phone = formAddContact.Phone;
+                Contact contact = new Contact(name, address, phone);
+                contacts.Add(contact);
 
-            if (formAddContact.ShowDialog() == DialogResult.OK) { 
-
+                listContacts();
             }
 
         }
@@ -49,6 +69,17 @@ namespace Contacts
                 listBoxContacs.Items.Add(contact.DisplayContact());
             }
 
+            string[] lines = new string[contacts.Count];
+
+            for (int i = 0; i < contacts.Count; i++)
+            {
+                lines[i] = contacts[i].Name + SEPARATOR[0] +
+                    contacts[i].Address + SEPARATOR[0] +
+                    contacts[i].Phone;
+            }
+
+            File.WriteAllLines(FILE_NAME, lines);
+
         }
 
         private void buttonRemove_Click(object sender, EventArgs e)
@@ -56,37 +87,39 @@ namespace Contacts
             int contactIndex = listBoxContacs.SelectedIndex;
             if (contactIndex >= 0)
             {
-                contacts.RemoveAt(contactIndex);
-                listContacts();
+
+                if (MessageBox.Show(
+                "Deseja apagar o contact0?",
+                "Alerta",
+                MessageBoxButtons.YesNo) == DialogResult.Yes)
+                {
+                    contacts.RemoveAt(contactIndex);
+                    listContacts();
+                }
             }
         }
 
-        private void buttonEdit_Click(object sender, EventArgs e)
+
+        private void listBoxContacs_DoubleClick(object sender, EventArgs e)
         {
             int contactIndex = listBoxContacs.SelectedIndex;
             if (contactIndex >= 0)
             {
-                string name = textBoxName.Text;
-                string address = textBoxAddress.Text;
-                string phone = textBoxPhone.Text;
-                contacts[contactIndex].Name = name;
-                contacts[contactIndex].Address = address;
-                contacts[contactIndex].Phone = phone;
-                textBoxName.Text = "";
-                textBoxAddress.Text = "";
-                textBoxPhone.Text = "";
-                listContacts();
-            }
-        }
+                FormAddContact formAddContact = new FormAddContact(
+                    contacts[contactIndex].Name,
+                    contacts[contactIndex].Address,
+                    contacts[contactIndex].Phone
+                    );
+                if (formAddContact.ShowDialog() == DialogResult.OK)
+                {
+                    contacts[contactIndex].Name = formAddContact.ContactName;
+                    contacts[contactIndex].Address = formAddContact.Address;
+                    contacts[contactIndex].Phone = formAddContact.Phone;
+                    listContacts();
+                }
 
-        private void listBoxContacs_SelectedIndexChanged(object sender, EventArgs e)
-        {
-            int contactIndex = listBoxContacs.SelectedIndex;
-            if (contactIndex >= 0)
-            {
-                textBoxName.Text = contacts[contactIndex].Name;
-                textBoxAddress.Text = contacts[contactIndex].Address;
-                textBoxPhone.Text = contacts[contactIndex].Phone;
+
+
             }
         }
     }
